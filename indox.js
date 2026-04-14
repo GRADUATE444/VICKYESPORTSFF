@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICKY ESPORTS FF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .hidden { display: none !important; }
+        .nav-active { color: #3b82f6 !important; transform: scale(1.1); }
+        .match-card { background: #1e293b; border-radius: 20px; margin-bottom: 20px; padding: 18px; border: 1px solid #334155; position: relative; overflow: hidden; }
+        .history-item { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .rule-card { background: #1e293b; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 10px; margin-bottom: 12px; }
+        .prog-bg { background: #0f172a; height: 6px; border-radius: 10px; border: 1px solid #334155; margin-top: 8px; position: relative; overflow: hidden; }
+        .prog-fill { height: 100%; border-radius: 10px; transition: width 0.5s; background: linear-gradient(to right, #ef4444, #b91c1c); }
+        .time-tag { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: bold; }
+        
+        .countdown-tag { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #fca5a5; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; animation: pulseRed 1.5s infinite; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        @keyframes pulseRed { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .top-rank { position: relative; padding-top: 20px; }
+        .crown { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); color: #fbbf24; font-size: 20px; }
+        .login-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; background: radial-gradient(circle at top, #1e293b, #0f172a); }
+        .input-style { width: 100%; max-width: 340px; background: #1e293b; border: 1px solid #334155; padding: 16px; border-radius: 16px; color: white; margin-bottom: 16px; outline: none; font-size: 14px; }
+        .google-btn { width: 100%; max-width: 340px; background: #22c55e; color: white; padding: 16px; border-radius: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2); cursor: pointer; }
+        .register-btn { width: 100%; max-width: 340px; background: #3b82f6; color: white; padding: 16px; border-radius: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2); cursor: pointer; }
+        .btn-disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); box-shadow: none; }
+        .amt-btn { transition: all 0.2s; border: 1px solid #334155; background: #1e293b; color: white; border-radius: 12px; padding: 10px 5px; font-weight: bold; font-size: 13px; }
+        .amt-active { border: 2px solid #3b82f6 !important; background: rgba(59, 130, 246, 0.2) !important; color: #60a5fa !important; }
+        .ff-max-title { font-family: 'Impact', sans-serif; font-size: 24px; font-weight: 900; text-transform: uppercase; background: linear-gradient(180deg, #FFD700 0%, #B8860B 50%, #8B6508 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(2px 2px 0px #000); letter-spacing: 1px; display: inline-block; }
+        #join-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #low-balance-alert { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: #ef4444; color: white; padding: 15px; border-radius: 15px; z-index: 6000; display: flex; flex-direction: column; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); animation: slideUp 0.3s ease-out; }
+        #msg-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 320px; z-index: 10000; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 13px; animation: slideDown 0.4s ease-out; }
+        .success-bg { background: #22c55e; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3); border: 1px solid #4ade80; }
+        .error-bg { background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); border: 1px solid #f87171; }
+        #welcome-popup { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 360px; background: rgba(30, 41, 59, 0.95); border: 1px solid #fbbf24; border-radius: 20px; padding: 15px; z-index: 12000; display: flex; align-items: center; gap: 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(251, 191, 36, 0.1); animation: welcomeSlide 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .welcome-icon { width: 45px; height: 45px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3); }
+        @keyframes welcomeSlide { from { top: -100px; opacity: 0; } to { top: 15px; opacity: 1; } }
+        #wd-success-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 11000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .wd-card { background: #1e293b; border: 2px solid #3b82f6; border-radius: 30px; width: 100%; max-width: 320px; padding: 30px; text-align: center; animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .check-icon { width: 80px; height: 80px; background: #22c55e; color: white; font-size: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 30px rgba(34, 197, 94, 0.5); animation: pulseGreen 2s infinite; }
+        @keyframes pulseGreen { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .app-animate { animation: appFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes appFadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 100px; opacity: 1; } }
+        @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        .profile-btn-list { background: #1e293b; padding: 12px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #334155; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .profile-btn-list:active { background: #334155; transform: scale(0.98); }
+        .profile-btn-list i:first-child { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-right: 12px; }
+        
+        .v-badge { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fbbf24, #d97706); color: black; font-size: 10px; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #fef08a; box-shadow: 0 0 10px rgba(245, 158, 11, 0.8); margin-left: 6px; font-style: normal !important; }
+        .blue-tick { display: inline-flex; align-items: center; justify-content: center; background: #3b82f6; color: white; font-size: 10px; font-weight: 900; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #bfdbfe; box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); margin-left: 6px; font-style: normal !important; }
+    </style>
+</head>
+<body>
+
+    <div id="push-notification-popup" class="hidden fixed top-4 left-1/2 -translate-x-1/2 w-[92%] max-w-[360px] z-[20000] bg-slate-900 border border-fuchsia-500/50 rounded-2xl shadow-[0_10px_50px_rgba(217,70,239,0.5)] flex overflow-hidden backdrop-blur-md">
+        <div id="push-side-color" class="bg-fuchsia-600 w-2"></div>
+        <div class="p-4 flex gap-4 items-start w-full">
+            <div id="push-icon-bg" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-fuchsia-500/20 text-fuchsia-400">
+                <i id="push-icon" class="fas fa-bell animate-bounce"></i>
+            </div>
+            <div class="flex-1">
+                <p id="push-title" class="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest mb-0.5">Notification</p>
+                <p id="push-msg" class="text-sm font-bold text-white leading-tight break-words"></p>
+            </div>
+            <button onclick="window.hide('push-notification-popup')" class="text-slate-500 hover:text-white active:scale-95"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <div id="msg-popup" class="hidden"></div>
+    <div id="premium-success-popup" class="hidden fixed top-5 left-1/2 -translate-x-1/2 w-[92%] max-w-[340px] z-[15000] bg-gradient-to-r from-green-600 to-emerald-900 rounded-2xl p-4 shadow-[0_10px_40px_rgba(34,197,94,0.4)] border border-green-400/50 flex items-center gap-4"><div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse shrink-0"><i class="fas fa-check text-white text-xl"></i></div><div><p class="text-[10px] text-green-200 font-black uppercase tracking-widest mb-0.5">Awesome!</p><p id="premium-success-text" class="text-sm font-bold text-white leading-tight">Slot Booked Successfully</p></div></div>
+    
+    <div id="refer-history-modal" class="hidden fixed top-0 left-0 w-full h-full bg-slate-900/95 z-[9999] flex flex-col items-center justify-center p-4 transition-all">
+        <div class="bg-slate-800 border border-slate-600 rounded-[2rem] w-full max-w-[340px] shadow-2xl relative overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="bg-slate-900 p-5 border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
+                <h3 class="text-lg font-black text-white italic uppercase"><i class="fas fa-history text-yellow-500 mr-2"></i> Referral History</h3>
+                <button onclick="window.hide('refer-history-modal')" class="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 active:scale-95"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-3" id="referral-list-container">
+                <p class="text-center text-slate-500 text-xs py-4">Loading your referrals...</p>
+            </div>
+        </div>
+    </div>
+    <div id="welcome-popup" class="hidden">
+        <div class="welcome-icon"><i class="fas fa-crown"></i></div>
+        <div class="flex-1">
+            <p id="welcome-popup-title" class="text-[10px] text-yellow-500 font-black uppercase tracking-widest mb-0.5">Welcome Warrior</p>
+            <h4 id="welcome-user-name" class="text-xs font-bold text-white leading-tight mt-1"></h4>
+        </div>
+    </div>
+    
+    <div id="wd-success-popup" class="hidden"><div class="wd-card"><div class="check-icon"><i class="fas fa-check"></i></div><h3 class="text-2xl font-black text-white mb-2 italic uppercase">Requested!</h3><p class="text-slate-400 text-xs mb-6 font-medium leading-relaxed">Your withdrawal request has been submitted successfully. It will be processed within 24 hours.</p><button onclick="window.closeWdPopup()" class="w-full bg-blue-600 py-3 rounded-xl font-black uppercase tracking-tighter text-sm">Awesome, Thanks!</button></div></div>
+    <div id="booking-success-overlay" class="hidden fixed top-0 left-0 w-full h-full bg-slate-900/95 z-[9999] flex flex-col items-center justify-center transition-all"><div class="w-28 h-28 rounded-full bg-green-500/20 flex items-center justify-center mb-6 border-4 border-green-500 shadow-[0_0_40px_rgba(34,197,94,0.6)]"><i class="fas fa-check text-6xl text-green-500"></i></div><h2 class="text-3xl font-black italic text-white tracking-wider uppercase drop-shadow-lg">Slot Booked!</h2><p class="text-slate-400 text-sm mt-3 font-bold uppercase tracking-widest">Verifying Details...</p></div>
+    <div id="low-balance-alert" class="hidden"><i class="fas fa-exclamation-circle text-3xl mb-1"></i><h3 class="font-black uppercase tracking-widest">Insufficient Funds</h3><p class="text-xs text-red-200 font-medium text-center">You don't have enough balance to join this match. Please add cash to your wallet.</p><div class="flex gap-3 mt-2 w-full"><button onclick="window.hide('low-balance-alert')" class="flex-1 bg-red-800 py-2 rounded-xl text-[10px] font-black uppercase">Cancel</button><button onclick="window.hide('low-balance-alert'); window.hide('join-overlay'); window.showSubSection('add-cash')" class="flex-1 bg-white text-red-600 py-2 rounded-xl text-[10px] font-black uppercase">Add Cash</button></div></div>
+    
+    <div id="join-overlay" class="hidden"><div class="bg-slate-800 border border-blue-500 p-6 rounded-[2rem] w-full max-w-[350px] shadow-2xl relative"><h3 class="text-xl font-black text-blue-400 mb-4 italic uppercase text-center">Enter Details</h3><div id="join-error-box" class="hidden bg-gradient-to-r from-red-900/50 to-red-800/30 border-l-4 border-red-500 p-3 rounded-r-xl mb-4 flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all"><i class="fas fa-shield-virus text-red-500 text-2xl animate-pulse"></i><p id="join-error-text" class="text-red-400 text-[10px] font-black uppercase tracking-widest leading-tight"></p></div><div class="space-y-3"><input type="number" id="m-uid" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl outline-none text-sm focus:border-blue-500 transition-all" placeholder="Game UID"><input type="text" id="m-nick" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl outline-none text-sm focus:border-blue-500 transition-all" placeholder="In-Game Nickname"><input type="number" id="m-level" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl outline-none text-sm focus:border-blue-500 transition-all" placeholder="Account Level (Min 30)"><div class="bg-blue-600/10 p-3 rounded-xl border border-blue-500/30 text-center"><p class="text-xs font-bold text-blue-400 uppercase tracking-tighter">Required Balance: <span id="m-fee-text">₹10</span></p></div><button onclick="window.processMatchJoin()" class="w-full bg-green-600 py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-transform">Confirm & Pay</button><button onclick="window.closeJoinModal()" class="w-full text-slate-500 text-[10px] font-bold uppercase mt-2">Go Back</button></div></div></div>
+
+    <section id="login-page" class="login-screen">
+        <div class="relative mb-6">
+            <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-40 animate-pulse"></div>
+            <img id="main-app-logo" src="https://i.ibb.co/1Y6zzYKg/file-000000003a6071fa98d880fbe00105ec.png" alt="Logo" class="relative w-40 h-40 rounded-full object-cover border-4 border-slate-800 shadow-2xl" style="mix-blend-mode: lighten;">
+        </div>
+        <h2 class="text-3xl font-black mb-1 tracking-tighter"><span class="text-blue-500">VICKY</span> <span class="text-white">ESPORTS FF</span></h2>
+        <p class="text-slate-500 text-[10px] mb-10 tracking-[0.2em] uppercase font-bold">Start Your Journey</p>
+        
+        <div id="login-step-1" class="w-full flex flex-col items-center">
+            <input type="email" id="l-email" class="input-style" placeholder="Email Address">
+            <input type="password" id="l-pass" class="input-style" placeholder="Password">
+            
+            <button id="login-btn" onclick="window.loginWithEmail()" class="google-btn mb-4"><i class="fas fa-sign-in-alt"></i> Login Now</button>
+            <p class="text-slate-500 text-xs mb-2">Don't have an account?</p>
+            <button onclick="window.showRegistration()" class="register-btn"><i class="fas fa-user-plus"></i> Create New Account</button>
+            <p id="login-error-msg" class="text-red-500 text-[10px] mt-4 font-black uppercase tracking-widest text-center"></p>
+        </div>
+        
+        <div id="login-step-2" class="hidden w-full flex flex-col items-center">
+            <p class="text-blue-400 text-xs font-black uppercase tracking-widest mb-4 italic text-center">New User?<br><span class="text-slate-400 text-[10px]">Enter Details to Register</span></p>
+            
+            <input type="email" id="p-email" class="input-style !mb-3" placeholder="Email Address" oninput="window.validateRegistration()">
+            <input type="password" id="p-pass" class="input-style !mb-3" placeholder="Password (Min 6 chars)" oninput="window.validateRegistration()">
+            <input type="text" id="p-nick" class="input-style !mb-3" placeholder="In-Game Nickname" oninput="window.validateRegistration()">
+            <input type="number" id="p-uid" class="input-style !mb-3" placeholder="Game UID" oninput="window.validateRegistration()">
+            
+            <div class="w-full max-w-[340px] relative mb-4">
+                <input type="number" id="p-refer" class="input-style !mb-0 border-yellow-500/50" placeholder="Referral Code (Optional)">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-yellow-500 font-black uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded">Optional</span>
+            </div>
+            
+            <button id="complete-reg-btn" onclick="window.completeRegistration()" class="google-btn btn-disabled mb-3" disabled>Register Account</button>
+            <button onclick="window.showLogin()" class="text-slate-500 text-xs font-bold mt-2 hover:text-white transition-all"><i class="fas fa-arrow-left"></i> Back to Login</button>
+            <p id="reg-error-msg" class="text-red-500 text-[10px] mt-4 font-black uppercase tracking-widest text-center"></p>
+        </div>
+    </section>
+
+    <div id="main-app" class="hidden">
+        <header class="p-4 bg-slate-900 flex justify-between items-center sticky top-0 z-50 border-b border-slate-800">
+            <h1 class="text-xl font-black tracking-tighter text-blue-500">VICKY <span class="text-white">ESPORTS FF</span></h1>
+            <div onclick="window.showSection('wallet')" class="bg-green-600/20 border border-green-500 px-3 py-1 rounded-full flex items-center gap-2 cursor-pointer active:scale-95 transition-transform"><i class="fas fa-wallet text-green-500 text-xs"></i><span id="header-balance" class="text-sm font-bold text-green-400">₹0.00</span></div>
+        </header>
+
+        <main class="p-4 pb-24">
+            <section id="home-section">
+                <div class="bg-gradient-to-r from-blue-700 to-blue-500 p-5 rounded-2xl mb-6 text-center shadow-lg border border-blue-400/30">
+                    <h2 id="live-notice-title" class="font-black text-xl text-white italic uppercase tracking-wider drop-shadow-md">Today's Live Matches</h2>
+                    <p id="live-notice-message" class="text-xs text-blue-100 mt-2 font-bold leading-relaxed"></p>
+                    <p class="text-[9px] text-blue-200/80 uppercase tracking-widest mt-3 pt-3 border-t border-blue-400/30" id="current-date-display">Date Loading...</p>
+                </div>
+                <div id="dynamic-matches-container" class="mb-4"></div>
+                <button onclick="window.showSubSection('schedule')" class="w-full bg-slate-800 border border-slate-700 py-5 rounded-2xl font-black text-blue-400 flex items-center justify-center gap-3 shadow-xl mt-4"><i class="fas fa-calendar-alt"></i> VIEW SCHEDULE MATCHES</button>
+            </section>
+
+            <section id="schedule-section" class="hidden"><div class="flex items-center gap-3 mb-6"><button onclick="window.showSection('home')" class="text-blue-500"><i class="fas fa-arrow-left text-xl"></i></button><h2 class="text-xl font-bold uppercase italic tracking-tight">Upcoming Schedule</h2></div><div class="bg-blue-600/10 p-4 rounded-xl border border-blue-500/30 text-center mb-4"><p class="text-xs font-black text-blue-400 uppercase tracking-[0.2em]">Tomorrow's Schedule</p></div><div id="dynamic-schedule-container" class="space-y-4 mb-4"></div></section>
+            
+            <section id="refer-section" class="hidden text-center py-10">
+                <div class="relative pt-6">
+                    <button onclick="window.show('refer-history-modal')" class="absolute top-0 right-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg active:scale-95 transition-all"><i class="fas fa-history text-yellow-500 text-sm"></i><span class="text-[10px] font-black uppercase text-slate-300">History</span></button>
+                    <i class="fas fa-gift text-6xl text-yellow-500 mb-6 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]"></i>
+                    <h2 class="text-3xl font-black mb-2 uppercase tracking-tighter">Refer & Earn ₹<span id="refer-bonus-display">10</span></h2>
+                </div>
+                
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-4">Your Referral Code</p>
+                <div id="user-refer-code" onclick="window.copyToClipboard(this.innerText)" class="bg-slate-800 p-4 rounded-xl border-2 border-dashed border-slate-600 mb-6 inline-block px-12 text-2xl font-black text-blue-400 tracking-widest cursor-pointer mt-1">
+                    LOADING...
+                </div>
+                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-left text-[10px] mx-4 mb-6 text-slate-500"><b class="text-slate-300 uppercase block mb-2 underline tracking-wider">Terms & Conditions:</b><div id="refer-terms-display" class="whitespace-pre-wrap leading-relaxed text-slate-400 font-medium">Loading terms...</div></div>
+                <button onclick="window.shareReferralLink()" class="w-full bg-green-600 py-4 rounded-xl font-black shadow-lg mb-8 mx-4" style="width: calc(100% - 32px);"><i class="fab fa-whatsapp mr-2"></i> Share on WhatsApp</button>
+                
+                <div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 mx-4 mb-8 text-left shadow-inner">
+                    <p class="text-[11px] font-black text-slate-400 uppercase mb-3 tracking-widest"><i class="fas fa-ticket-alt text-blue-400 mr-2"></i>Have a Promo Code?</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="promo-code-input" class="flex-1 bg-slate-900 border border-slate-600 p-3 rounded-xl outline-none text-yellow-500 font-bold text-sm uppercase" placeholder="ENTER PROMO CODE">
+                        <button id="apply-promo-btn" onclick="window.applyPromoCode()" class="bg-blue-600 px-6 rounded-xl font-black text-xs uppercase shadow-lg active:scale-95 transition-transform">Apply</button>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-slate-700/50">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase mb-3 text-center tracking-widest">Get Latest Promo Codes Here</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <a id="promo-wa-link" href="javascript:void(0)" target="_blank" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-b from-green-600/20 to-green-900/20 border border-green-500/30 text-green-400 hover:bg-green-500/30 active:scale-95 transition-all shadow-[inset_0_0_10px_rgba(34,197,94,0.1)]">
+                                <i class="fab fa-whatsapp text-2xl mb-1 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"></i>
+                                <span class="text-[8px] font-black uppercase tracking-wider">WhatsApp</span>
+                            </a>
+                            <a id="promo-tg-link" href="javascript:void(0)" target="_blank" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-b from-blue-600/20 to-blue-900/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 active:scale-95 transition-all shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]">
+                                <i class="fab fa-telegram-plane text-2xl mb-1 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"></i>
+                                <span class="text-[8px] font-black uppercase tracking-wider">Telegram</span>
+                            </a>
+                            <a id="promo-ig-link" href="javascript:void(0)" target="_blank" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-b from-pink-600/20 to-pink-900/20 border border-pink-500/30 text-pink-400 hover:bg-pink-500/30 active:scale-95 transition-all shadow-[inset_0_0_10px_rgba(236,72,153,0.1)]">
+                                <i class="fab fa-instagram text-2xl mb-1 drop-shadow-[0_0_8px_rgba(236,72,153,0.6)]"></i>
+                                <span class="text-[8px] font-black uppercase tracking-wider">Instagram</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="leaderboard-section" class="hidden">
+                <h2 class="text-xl font-bold mb-8 flex items-center gap-2 uppercase tracking-tighter"><i class="fas fa-trophy text-yellow-500"></i> Weekly Top Players</h2>
+                <div class="grid grid-cols-3 gap-3 mb-10 items-end text-center" id="leaderboard-top-3"></div>
+                <div class="space-y-3" id="leaderboard-others"></div>
+            </section>
+            
+            <section id="wallet-section" class="hidden"><h2 class="text-xl font-bold mb-6">My Wallet</h2><div class="bg-slate-800 p-10 rounded-[35px] border border-slate-700 mb-8 text-center shadow-2xl"><p class="text-xs text-slate-500 uppercase font-black tracking-widest mb-2">Available Balance</p><h3 id="wallet-balance-text" class="text-5xl font-black">₹0.00</h3></div><div class="grid grid-cols-2 gap-4 mb-10"><button onclick="window.showSubSection('add-cash')" class="bg-blue-600 py-4 rounded-2xl font-black shadow-lg">ADD CASH</button><button onclick="window.showSubSection('withdraw')" class="bg-slate-700 py-4 rounded-2xl font-black border border-slate-600">WITHDRAW</button></div><h3 class="text-sm font-bold text-slate-400 mb-4 uppercase italic">Recent Transactions</h3><div id="transaction-list"><p class="text-center text-slate-500 text-xs mt-4">Loading history...</p></div></section>
+            
+            <section id="withdraw-section" class="hidden"><div class="flex justify-between items-center mb-6"><button onclick="window.showSection('wallet')" class="text-blue-500 font-bold"><i class="fas fa-arrow-left mr-2"></i> BACK</button><button onclick="window.showSubSection('withdraw-history')" class="bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black border border-slate-600 flex items-center gap-2"><i class="fas fa-clock text-blue-400"></i> HISTORY</button></div><div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 relative"><h2 class="text-2xl font-black mb-6 uppercase italic text-center">Withdraw Money</h2><div id="withdraw-error-box" class="hidden bg-gradient-to-r from-red-900/50 to-red-800/30 border-l-4 border-red-500 p-3 rounded-r-xl mb-4 flex items-center gap-3 shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all"><i class="fas fa-exclamation-triangle text-red-500 text-xl animate-pulse"></i><p id="withdraw-error-text" class="text-red-400 text-[10px] font-black uppercase tracking-widest leading-tight"></p></div><p class="text-[11px] font-black text-slate-400 uppercase mb-3 tracking-widest">Select Method</p><div class="grid grid-cols-2 gap-2 mb-6"><button onclick="window.toggleWdView('upi', this)" class="amt-btn amt-active">UPI / PhonePe</button><button onclick="window.toggleWdView('redeem', this)" class="amt-btn">Play Redeem Code</button></div><div id="upi-wd-box"><input type="text" id="upi-id" placeholder="Enter UPI ID or Number" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-4 outline-none text-blue-400 font-bold text-sm"><div class="relative mb-6"><span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₹</span><input type="number" id="upi-amt" placeholder="Enter Amount (Min ₹10)" class="w-full bg-slate-900 border border-slate-700 p-4 pl-8 rounded-2xl text-xl font-black text-blue-400 outline-none"></div><button onclick="window.processWithdrawal('upi')" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-lg uppercase shadow-lg">Request Withdrawal</button></div><div id="redeem-wd-box" class="hidden"><input type="email" id="redeem-email" placeholder="Enter Your Email Address" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-4 outline-none text-blue-400 font-bold text-sm"><div class="grid grid-cols-3 gap-2 mb-6"><button onclick="window.setRedeemAmt(10, this)" class="amt-btn">₹10</button><button onclick="window.setRedeemAmt(25, this)" class="amt-btn">₹25</button><button onclick="window.setRedeemAmt(50, this)" class="amt-btn">₹50</button><button onclick="window.setRedeemAmt(100, this)" class="amt-btn">₹100</button><button onclick="window.setRedeemAmt(500, this)" class="amt-btn">₹500</button><button onclick="window.setRedeemAmt(1000, this)" class="amt-btn">₹1000</button></div><button onclick="window.processWithdrawal('redeem')" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-lg uppercase shadow-lg">Get Redeem Code</button></div></div></section>
+            
+            <section id="withdraw-history-section" class="hidden">
+                <div class="flex items-center gap-3 mb-6">
+                    <button onclick="window.showSubSection('withdraw')" class="text-blue-500"><i class="fas fa-arrow-left text-xl"></i></button>
+                    <h2 class="text-xl font-bold uppercase italic tracking-tight">Withdrawal History</h2>
+                </div>
+                <div id="withdrawal-list" class="space-y-3">
+                    <p class="text-center text-slate-500 text-xs mt-4">Loading history...</p>
+                </div>
+            </section>
+            
+            <section id="add-cash-section" class="hidden text-center">
+                <button onclick="window.showSection('wallet')" class="text-blue-500 mb-6 font-bold flex"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700">
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <button onclick="window.setAmt(10, this)" class="amt-btn">₹10</button>
+                        <button onclick="window.setAmt(25, this)" class="amt-btn">₹25</button>
+                        <button onclick="window.setAmt(50, this)" class="amt-btn">₹50</button>
+                        <button onclick="window.setAmt(100, this)" class="amt-btn amt-active">₹100</button>
+                        <button onclick="window.setAmt(200, this)" class="amt-btn">₹200</button>
+                        <button onclick="window.setAmt(500, this)" class="amt-btn">₹500</button>
+                    </div>
+                    <input type="number" id="final-amt" value="100" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl text-xl font-black text-blue-400 mb-6" readonly>
+                    <button id="add-cash-btn" onclick="window.processAddCash()" class="w-full bg-green-600 py-4 rounded-2xl font-black text-lg uppercase shadow-lg">Proceed to Pay</button>
+                </div>
+            </section>
+            
+            <section id="profile-section" class="hidden">
+                <div class="bg-slate-800 p-6 rounded-3xl mb-6 border border-slate-700 shadow-xl text-center">
+                    <div id="u-photo" class="w-20 h-20 bg-blue-600 rounded-3xl mx-auto mb-4 flex items-center justify-center text-3xl font-bold shadow-lg border-4 border-slate-700">V</div>
+                    <h2 id="u-name" class="text-2xl font-black italic">User</h2>
+                    <p id="u-email" class="text-[10px] text-slate-500 tracking-widest mb-1 mt-1">---</p>
+                    <p id="app-uid" class="text-[10px] text-red-600 font-black tracking-widest mb-4 uppercase flex justify-center items-center">ID: ---</p>
+                    <div class="flex gap-2"><div class="flex-1 bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50"><p class="text-[8px] text-slate-500 uppercase font-bold">Nickname</p><b id="u-nick" class="text-[11px] font-black text-yellow-500">---</b></div><div class="flex-1 bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50"><p class="text-[8px] text-slate-500 uppercase font-bold">Player UID</p><b id="u-uid" class="text-[11px] font-black text-blue-400">---</b></div></div>
+                </div>
+                <div class="space-y-2">
+                    <div onclick="window.showSubSection('edit-profile')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-user-edit bg-blue-500/20 text-blue-400"></i> <span class="text-xs font-bold uppercase italic">Edit Profile</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('match-history')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-history bg-indigo-500/20 text-indigo-400"></i> <span class="text-xs font-bold uppercase italic">Match History</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('reward-history')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-medal bg-yellow-500/20 text-yellow-400"></i> <span class="text-xs font-bold uppercase italic">Reward History</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('rules')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-scroll bg-purple-500/20 text-purple-400"></i> <span class="text-xs font-bold uppercase italic">Tournament Rules</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('terms')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-file-contract bg-orange-500/20 text-orange-400"></i> <span class="text-xs font-bold uppercase italic">Terms & Conditions</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('policy')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-user-shield bg-green-500/20 text-green-400"></i> <span class="text-xs font-bold uppercase italic">Privacy Policy</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="window.showSubSection('support')" class="profile-btn-list"><div class="flex items-center"><i class="fas fa-headset bg-cyan-500/20 text-cyan-400"></i> <span class="text-xs font-bold uppercase italic">Help Center</span></div><i class="fas fa-chevron-right text-slate-600 text-xs"></i></div>
+                    <div onclick="location.reload()" class="profile-btn-list border-red-500/30 mt-4 !bg-red-900/10 hover:!bg-red-900/30"><div class="flex items-center"><i class="fas fa-power-off bg-red-500/20 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]"></i> <span class="text-xs font-black uppercase italic text-red-500 tracking-wider">Log Out Account</span></div><i class="fas fa-chevron-right text-red-900 text-xs"></i></div>
+                </div>
+            </section>
+            
+            <section id="match-history-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><h2 class="text-xl font-black mb-6 uppercase italic tracking-tighter">My Match History</h2><div id="match-history-list" class="space-y-3"><p class="text-center text-slate-500 text-xs mt-4">Loading...</p></div></section>
+            <section id="edit-profile-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><div class="bg-slate-800 p-6 rounded-3xl border border-slate-700"><h2 class="text-xl font-black mb-6 uppercase italic">Update Details</h2><p class="text-[10px] text-slate-500 mb-2 uppercase font-bold">New Nickname</p><input type="text" id="edit-nick" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-4 outline-none text-yellow-500 font-bold" placeholder="Enter New Nickname"><p class="text-[10px] text-slate-500 mb-2 uppercase font-bold">New Game UID</p><input type="number" id="edit-uid" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-6 outline-none text-blue-400 font-bold" placeholder="Enter New UID"><button onclick="window.updateProfileData()" class="w-full bg-blue-600 py-4 rounded-2xl font-black uppercase">Save Changes</button></div></section>
+            
+            <section id="reward-history-section" class="hidden">
+                <button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button>
+                <h2 class="text-xl font-bold mb-6 uppercase italic">My Winnings & Rewards</h2>
+                <div id="reward-history-list" class="space-y-3">
+                    <div class="text-center py-10 opacity-30"><i class="fas fa-medal text-5xl mb-3"></i><p class="text-xs uppercase font-bold">No rewards yet</p></div>
+                </div>
+            </section>
+            
+            <section id="terms-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><h2 class="text-xl font-bold mb-4 uppercase italic">Terms & Conditions</h2><div id="dynamic-tnc-container" class="bg-slate-800 p-5 rounded-2xl text-[11px] leading-relaxed text-slate-400 space-y-4 max-h-[70vh] overflow-y-auto whitespace-pre-wrap">Loading...</div></section>
+            <section id="policy-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><h2 class="text-xl font-bold mb-4 uppercase italic">Privacy Policy</h2><div id="dynamic-privacy-container" class="bg-slate-800 p-5 rounded-2xl text-[11px] leading-relaxed text-slate-400 space-y-4 max-h-[70vh] overflow-y-auto whitespace-pre-wrap">Loading...</div></section>
+            <section id="rules-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><h2 class="text-2xl font-black mb-6 uppercase">Tournament Rules</h2><div id="dynamic-rules-container" class="space-y-3"><p class="text-center text-slate-500 text-xs">Loading...</p></div></section>
+            <section id="support-section" class="hidden"><button onclick="window.showSection('profile')" class="text-blue-500 mb-6 font-bold flex items-center"><i class="fas fa-arrow-left mr-2"></i> BACK</button><h2 class="text-2xl font-black mb-6 uppercase tracking-tighter text-center italic">Support Center</h2><div id="dynamic-support-container" class="space-y-4"><p class="text-center text-slate-500 text-xs">Loading...</p></div></section>
+        </main>
+
+        <nav class="fixed bottom-0 w-full bg-slate-900 border-t border-slate-800 flex justify-around py-5 z-[100] rounded-t-3xl shadow-2xl">
+            <button onclick="window.showSection('home')" id="home-btn" class="nav-active text-slate-500"><i class="fas fa-gamepad text-2xl"></i></button>
+            <button onclick="window.showSection('refer')" id="refer-btn" class="text-slate-500"><i class="fas fa-share-alt text-2xl"></i></button>
+            <button onclick="window.showSection('leaderboard')" id="leaderboard-btn" class="text-slate-500"><i class="fas fa-trophy text-2xl"></i></button>
+            <button onclick="window.showSection('wallet')" id="wallet-btn" class="text-slate-500"><i class="fas fa-wallet text-2xl"></i></button>
+            <button onclick="window.showSection('profile')" id="profile-btn" class="text-slate-500"><i class="fas fa-user-circle text-2xl"></i></button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        // ================= EMAIL AUTHENTICATION IMPORTS =================
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, get, update, set, increment, onChildAdded } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+        
+        // ================= YOUR FIREBASE CONFIG =================
+        const firebaseConfig = {
+          apiKey: "AIzaSyC-wnBaAGynGrALfwFZhGyOSlH0dRJRbH4",
+          authDomain: "fftournament-732f0.firebaseapp.com",
+          databaseURL: "https://fftournament-732f0-default-rtdb.firebaseio.com",
+          projectId: "fftournament-732f0",
+          storageBucket: "fftournament-732f0.firebasestorage.app",
+          messagingSenderId: "2810721503",
+          appId: "1:2810721503:web:a4900bb197df185e22656a",
+          measurementId: "G-9MDNL5TLXM"
+        };
+        
+        const app = initializeApp(firebaseConfig); 
+        const auth = getAuth(app); 
+        const db = getDatabase(app);
+
+        const el = id => document.getElementById(id);
+        const hide = id => { if(el(id)) el(id).classList.add('hidden'); };
+        const show = id => { if(el(id)) el(id).classList.remove('hidden'); };
+        
+        window.el = el; window.hide = hide; window.show = show;
+        
+        window.userBalance = 0; window.currentUserAppId = ""; window.joinedMatches = {}; window.currentFee = 0; window.currentTargetId = ""; window.dynamicType = ""; window.selectedRedeemAmt = 0; window.dynamicSignupBonus = 0;
+        window.currentUserName = "Player";
+        window.top3Names = [];
+        window.welcomeSettings = { isActive: true, title: "Welcome Warrior", message: "Have a great day ahead!" };
+        window.appLoadTime = Date.now();
+        window.matchListeners = {};
+        
+        window.activeMatchesData = {};
+        window.countdownInterval = null;
+
+        el('current-date-display').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        window.showPushNotification = (title, msg, type) => {
+            const pop = el('push-notification-popup');
+            el('push-title').innerText = title;
+            el('push-msg').innerText = msg;
+            
+            if(type === 'public') {
+                el('push-title').className = "text-[10px] font-black text-fuchsia-400 uppercase tracking-widest mb-0.5";
+                el('push-icon-bg').className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-fuchsia-500/20 text-fuchsia-400";
+                el('push-side-color').className = "bg-fuchsia-600 w-2";
+                el('push-icon').className = "fas fa-bullhorn animate-pulse text-lg";
+            } else {
+                el('push-title').className = "text-[10px] font-black text-blue-400 uppercase tracking-widest mb-0.5";
+                el('push-icon-bg').className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-blue-500/20 text-blue-400";
+                el('push-side-color').className = "bg-blue-600 w-2";
+                el('push-icon').className = "fas fa-bell animate-bounce text-lg";
+            }
+            
+            show('push-notification-popup');
+            pop.style.animation = "slideDown 0.4s ease-out";
+            setTimeout(() => hide('push-notification-popup'), 8000);
+        };
+
+        onChildAdded(ref(db, 'AdminNotifications/Public'), (snap) => {
+            const d = snap.val();
+            if(d.timestamp > window.appLoadTime) {
+                window.showPushNotification(d.title, d.msg, 'public');
+            }
+        });
+
+        window.listenForAppSettings = () => {
+            onValue(ref(db, 'appSettings'), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const logoLink = data.logo || data.logoUrl || data.AppLogo || data.image || data.logo_url;
+                    if (logoLink && el('main-app-logo')) el('main-app-logo').src = logoLink;
+
+                    if (data.notice) { if(el('live-notice-title')) el('live-notice-title').innerText = data.notice.title || "TODAY LIVE MATCHES"; if(el('live-notice-message')) el('live-notice-message').innerText = data.notice.message || ""; }
+                    if (data.refer) { if(el('refer-bonus-display')) el('refer-bonus-display').innerText = data.refer.referBonus || 0; if(el('refer-terms-display')) el('refer-terms-display').innerText = data.refer.terms || ""; window.dynamicSignupBonus = parseInt(data.refer.signupBonus) || 0; }
+                    
+                    if (data.welcome) { window.welcomeSettings = data.welcome; }
+
+                    if (data.promoLinks) {
+                        const wa = el('promo-wa-link'), tg = el('promo-tg-link'), ig = el('promo-ig-link');
+                        if(wa) { wa.href = data.promoLinks.whatsapp || "javascript:void(0)"; }
+                        if(tg) { tg.href = data.promoLinks.telegram || "javascript:void(0)"; }
+                        if(ig) { ig.href = data.promoLinks.instagram || "javascript:void(0)"; }
+                    }
+
+                    if (data.profile) {
+                        if (data.profile.rules && el('dynamic-rules-container')) { el('dynamic-rules-container').innerHTML = ''; Object.values(data.profile.rules).forEach((r, i) => { if(r) el('dynamic-rules-container').innerHTML += `<div class="rule-card text-sm"><b>#${i + 1}:</b> ${r}</div>`; }); }
+                        if (data.profile.tnc && el('dynamic-tnc-container')) el('dynamic-tnc-container').innerText = data.profile.tnc;
+                        if (data.profile.privacy && el('dynamic-privacy-container')) el('dynamic-privacy-container').innerText = data.profile.privacy;
+                        if (data.profile.support && el('dynamic-support-container')) {
+                            el('dynamic-support-container').innerHTML = '';
+                            Object.values(data.profile.support).forEach((m) => {
+                                if (m && (m.isVisible === true || m.isVisible === 'true')) {
+                                    let ic = "fas fa-headset", col = "text-cyan-400", bg = "border-cyan-500/20", ty = (m.type||"").toLowerCase();
+                                    if (ty.includes("telegram")) { ic = "fab fa-telegram"; col = "text-blue-400"; bg = "border-blue-500/20"; } else if (ty.includes("whatsapp")) { ic = "fab fa-whatsapp"; col = "text-green-400"; bg = "border-green-500/20"; } else if (ty.includes("email")||ty.includes("mail")) { ic = "fas fa-envelope"; col = "text-red-400"; bg = "border-red-500/20"; } else if (ty.includes("insta")) { ic = "fab fa-instagram"; col = "text-pink-500"; bg = "border-pink-500/20"; }
+                                    el('dynamic-support-container').innerHTML += `<a href="${m.link}" target="_blank" class="history-item py-6 ${bg} border-2 active:scale-95 transition-all"><i class="${ic} text-4xl ${col}"></i> <div class="ml-4 flex-1"><p class="font-black text-lg text-white">${m.type}</p><p class="text-[9px] text-slate-500 uppercase">Tap to connect</p></div><i class="fas fa-chevron-right text-slate-600 text-sm"></i></a>`;
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        };
+        window.listenForAppSettings();
+
+        window.updateProfileBadge = () => {
+            const uidEl = el('app-uid');
+            if(!uidEl || !window.currentUserAppId) return;
+            
+            let isTop3 = false;
+            if(window.currentUserName && window.top3Names) {
+                isTop3 = window.top3Names.includes(window.currentUserName.toLowerCase().trim());
+            }
+            
+            let badgeHTML = isTop3 
+                ? `<span class="v-badge" title="Top Player V-Badge">V</span>` 
+                : `<span class="blue-tick" title="Verified Player"><i class="fas fa-check"></i></span>`;
+            
+            uidEl.innerHTML = `ID: ${window.currentUserAppId} ${badgeHTML}`;
+            
+            const uNameEl = el('u-name');
+            if(uNameEl) uNameEl.innerText = window.currentUserName;
+        };
+
+        window.showRegistration = () => { hide('login-step-1'); show('login-step-2'); };
+        window.showLogin = () => { hide('login-step-2'); show('login-step-1'); };
+
+        window.loginWithEmail = async () => {
+            const e = el('l-email').value.trim();
+            const p = el('l-pass').value.trim();
+            
+            if(!e || !p) { return el('login-error-msg').innerText = "Please enter Email and Password!"; }
+
+            const btn = el('login-btn'); 
+            const origTxt = btn.innerHTML; 
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Logging in...'; 
+            btn.disabled = true;
+            
+            try {
+                const result = await signInWithEmailAndPassword(auth, e, p); 
+                const guid = result.user.uid; 
+                const snap = await get(ref(db, 'Users'));
+                
+                let fid = null, uData = null;
+                if (snap.exists()) { snap.forEach((c) => { if (c.val().googleUid === guid) { fid = c.key; uData = c.val(); } }); }
+                
+                if (fid) {
+                    window.currentUserAppId = fid; 
+                    window.userBalance = uData.balance || 0;
+                    window.currentUserName = uData.nickname || "Player"; 
+                    
+                    el('u-uid').innerText = uData.gameUid || "---"; 
+                    el('edit-nick').value = uData.nickname || "Player"; 
+                    el('edit-uid').value = uData.gameUid || "---";
+                    
+                    window.finishLoginSetup(result.user);
+                } else { el('login-error-msg').innerText = "Account data not found in Database!"; }
+            } catch(error) { el('login-error-msg').innerText = "Login Failed: " + error.message; }
+            btn.innerHTML = origTxt; btn.disabled = false;
+        };
+
+        window.validateRegistration = () => { 
+            const btn = el('complete-reg-btn'); 
+            if(el('p-nick').value.trim().length > 2 && el('p-uid').value.trim().length > 5 && el('p-email').value.trim().length > 5 && el('p-pass').value.trim().length >= 6) { btn.classList.remove('btn-disabled'); btn.disabled = false; } else { btn.classList.add('btn-disabled'); btn.disabled = true; } 
+        };
+
+        window.completeRegistration = async () => {
+            const e = el('p-email').value.trim(); const p = el('p-pass').value.trim(); const n = el('p-nick').value.trim(); const u = el('p-uid').value.trim(); const rCode = el('p-refer').value.trim(); const btn = el('complete-reg-btn');
+            
+            if(window.top3Names && window.top3Names.includes(n.toLowerCase())) { return el('reg-error-msg').innerText = "This name is reserved by a Top Player!"; }
+
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Registering...'; btn.disabled = true;
+            
+            let refData = "";
+            if (rCode && rCode.length > 5) { const rSnap = await get(ref(db, `Users/${rCode}`)); if(rSnap.exists()) { refData = rCode; } else { alert("Invalid Referral Code! We will register you without it."); } }
+
+            try {
+                const result = await createUserWithEmailAndPassword(auth, e, p); const gu = result.user;
+                window.currentUserAppId = Math.floor(1000000000 + Math.random() * 9000000000).toString(); window.userBalance = window.dynamicSignupBonus || 0; window.currentUserName = n; 
+
+                await set(ref(db, 'Users/' + window.currentUserAppId), { googleUid: gu.uid, name: n, email: gu.email, dpUrl: "", nickname: n, gameUid: u, balance: window.userBalance, matchesPlayed: 0, matchesWon: 0, totalRefers: 0, referredBy: refData, referPayoutDone: false });
+                
+                if(window.userBalance > 0) { const dt = new Date().toLocaleString('en-GB'); await set(push(ref(db, `Users/${window.currentUserAppId}/walletTransactions`)), { type: 'add', title: 'Welcome Bonus', amount: window.userBalance, date: dt }); await set(push(ref(db, `Users/${window.currentUserAppId}/rewards`)), { title: 'Welcome Bonus', amount: window.userBalance, date: dt }); }
+
+                el('u-uid').innerText = u; el('edit-nick').value = n; el('edit-uid').value = u;
+                window.finishLoginSetup(gu);
+                
+            } catch(error) { el('reg-error-msg').innerText = "Error: " + error.message; btn.innerHTML = 'Register Account'; btn.disabled = false; }
+        };
+
+        window.finishLoginSetup = (gu) => {
+            window.updateProfileBadge(); el('u-nick').innerText = window.currentUserName; el('u-email').innerText = gu.email;
+            let firstLetter = window.currentUserName.charAt(0).toUpperCase(); el('u-photo').innerHTML = firstLetter;
+            if(window.currentUserAppId) el('user-refer-code').innerText = window.currentUserAppId;
+            
+            window.updateUI(); hide('login-page'); show('main-app'); el('main-app').classList.add('app-animate'); 
+            showWelcomeMessage(window.currentUserName); 
+            window.listenForMatches(); window.listenForScheduleMatches(); window.listenForUserHistory(); window.listenForLeaderboard(); window.listenForMyReferrals(); 
+            
+            if(window.countdownInterval) clearInterval(window.countdownInterval);
+            window.countdownInterval = setInterval(window.updateMatchTimers, 1000);
+        };
+
+        window.updateUI = () => { el('header-balance').innerText = "₹" + window.userBalance.toFixed(2); el('wallet-balance-text').innerText = "₹" + window.userBalance.toFixed(2); };
+
+        window.updateMatchTimers = () => {
+            const now = new Date().getTime();
+            for (const id in window.activeMatchesData) {
+                const match = window.activeMatchesData[id];
+                const timeEl = el(`time-tag-${id}`);
+                const bookedEl = el(`booked-status-${id}`);
+                
+                if (!match.matchTime) continue;
+
+                const matchTimeMs = new Date(match.matchTime).getTime();
+                const waitMin = match.countdownMinutes || 15;
+                const countdownStartMs = matchTimeMs - (waitMin * 60 * 1000);
+                
+                let isCountdownPhase = match.isCountdownActive && (now >= countdownStartMs && now < matchTimeMs);
+                let isStartedPhase = now >= matchTimeMs;
+
+                if (timeEl) {
+                    if (isCountdownPhase) {
+                        const timeLeft = matchTimeMs - now;
+                        const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        timeEl.className = "countdown-tag"; timeEl.innerHTML = `<i class="fas fa-stopwatch mr-1"></i> ${m}m ${s}s`;
+                    } 
+                    else if (isStartedPhase) { timeEl.className = "time-tag bg-slate-800 text-yellow-400 border-yellow-500/30"; timeEl.innerHTML = `<i class="fas fa-star mr-1"></i> STARTED`; }
+                    else { const matchDate = new Date(match.matchTime); const formattedTime = matchDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }); timeEl.className = "time-tag bg-slate-800 text-blue-400 border-blue-500/30"; timeEl.innerHTML = `<i class="fas fa-clock mr-1"></i> ${formattedTime}`; }
+                }
+
+                if (bookedEl) {
+                    if (isStartedPhase) { bookedEl.innerHTML = `<div class="text-green-500 font-black text-xs uppercase mb-2"><i class="fas fa-check-circle"></i> Booked</div><div class="bg-slate-900 border border-yellow-500/50 rounded-xl p-4 mt-2 shadow-[0_0_15px_rgba(234,179,8,0.2)]"><p class="text-2xl text-yellow-400 font-black tracking-widest animate-pulse">STARTED</p></div>`; } 
+                    else if (isCountdownPhase) { let rId = match.roomId && match.roomId !== 'Waiting...' ? match.roomId : 'Processing...'; let rPass = match.password ? match.password : 'Processing...'; bookedEl.innerHTML = `<div class="text-green-500 font-black text-xs uppercase mb-2"><i class="fas fa-check-circle"></i> Booked</div><div class="bg-slate-900 border border-blue-500/50 rounded-xl p-3 mt-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]"><p class="text-[10px] text-blue-400 font-black uppercase mb-1">Room Details</p><p class="text-xl text-yellow-400 font-black mb-1">ID: <span class="text-white">${rId}</span></p><p class="text-xl text-yellow-400 font-black">PASS: <span class="text-white">${rPass}</span></p></div>`; } 
+                    else { bookedEl.innerHTML = `<div class="text-green-500 font-black text-xs uppercase mb-2"><i class="fas fa-check-circle"></i> Booked</div><p class="text-[14px] text-yellow-500 font-black animate-pulse uppercase tracking-widest mt-1">Waiting...</p><p class="text-[10px] text-slate-300 font-medium mt-2 bg-slate-900/50 p-2 rounded-lg border border-slate-700">मैच स्टार्ट होने से ${waitMin} मिनट पहले पासवर्ड मिल जाएगा।</p>`; }
+                }
+            }
+        };
+
+        window.copyToClipboard = (text) => { navigator.clipboard.writeText(text).then(() => { window.showNotify("✅ Code Copied!", "success"); }); };
+
+        window.listenForMyReferrals = () => {
+            if(!window.currentUserAppId) return;
+            onValue(ref(db, 'Users'), (snap) => {
+                const list = el('referral-list-container'); if(!list) return; let html = ""; const users = snap.val() || {};
+                for(let uKey in users) {
+                    if(users[uKey].referredBy === window.currentUserAppId) {
+                        const bName = users[uKey].nickname || users[uKey].name || "Player"; const isPaid = users[uKey].referPayoutDone; const statusColor = isPaid ? "text-green-400 bg-green-500/10 border-green-500/30" : "text-yellow-400 bg-yellow-500/10 border-yellow-500/30"; const statusText = isPaid ? "<i class='fas fa-check-double mr-1'></i> Success" : "<i class='fas fa-hourglass-half mr-1'></i> Pending";
+                        html += `<div class="bg-slate-900 border border-slate-700 p-3 rounded-xl flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-slate-400"><i class="fas fa-user"></i></div><div><p class="text-xs font-black text-white">${bName}</p><p class="text-[9px] text-slate-500 uppercase mt-0.5">Joined via link</p></div></div><div class="text-right"><p class="text-[9px] font-bold ${statusColor} border px-2 py-1 rounded uppercase tracking-wider">${statusText}</p></div></div>`;
+                    }
+                }
+                if(html === "") { list.innerHTML = '<p class="text-center text-slate-500 text-xs py-4">You have not referred anyone yet.</p>'; } else { list.innerHTML = html; }
+            });
+        };
+
+        window.listenForUserHistory = () => {
+            if (!window.currentUserAppId) return;
+            onValue(ref(db, 'Users/' + window.currentUserAppId), (snap) => {
+                if(snap.exists()){
+                    const d = snap.val(); window.userBalance = d.balance || 0; window.updateUI();
+                    if(el('transaction-list')) {
+                        el('transaction-list').innerHTML = '';
+                        if(d.walletTransactions) { Object.values(d.walletTransactions).reverse().forEach(tx => { let isC = tx.type === 'add'; el('transaction-list').innerHTML += `<div class="history-item"><div><p class="text-sm font-bold">${tx.title}</p><p class="text-[10px] text-slate-500">${tx.date}</p></div><b class="${isC ? 'text-green-400' : 'text-red-500'}">${isC ? '+' : '-'}₹${tx.amount}</b></div>`; });
+                        } else { el('transaction-list').innerHTML = '<p class="text-center text-slate-500 text-xs mt-4 opacity-50">No transactions.</p>'; }
+                    }
+                    if(el('reward-history-list')) {
+                        el('reward-history-list').innerHTML = '';
+                        if(d.rewards) { Object.values(d.rewards).reverse().forEach(r => { el('reward-history-list').innerHTML += `<div class="history-item border border-yellow-500/30 bg-yellow-500/5"><div><p class="text-sm font-bold text-yellow-500"><i class="fas fa-gift mr-1"></i> ${r.title}</p><p class="text-[10px] text-slate-500 uppercase">${r.date}</p></div><b class="text-green-400">+₹${r.amount}</b></div>`; });
+                        } else { el('reward-history-list').innerHTML = '<div class="text-center py-10 opacity-30"><i class="fas fa-medal text-5xl mb-3"></i><p class="text-xs uppercase font-bold">No rewards yet</p></div>'; }
+                    }
+                    if(el('withdrawal-list')) {
+                        el('withdrawal-list').innerHTML = '';
+                        if(d.withdrawals) { 
+                            Object.values(d.withdrawals).reverse().forEach(tx => { 
+                                let icon = tx.method.includes('UPI') ? '<i class="fas fa-mobile-alt text-green-500"></i>' : '<i class="fab fa-google-play text-blue-500"></i>'; 
+                                let statusColor = "text-yellow-500 bg-yellow-500/10"; if(tx.status === "Success") statusColor = "text-green-400 bg-green-500/10"; else if(tx.status === "Rejected") statusColor = "text-red-400 bg-red-500/10";
+                                let redeemHtml = ""; if(tx.status === "Success" && tx.redeemCode) { redeemHtml = `<div class="flex items-center gap-2 mt-1.5"><span class="bg-green-900/30 border border-green-500/50 text-green-400 text-[10px] font-black px-2 py-0.5 rounded select-all tracking-wider">${tx.redeemCode}</span><button onclick="window.copyToClipboard('${tx.redeemCode}')" class="text-slate-400 hover:text-green-400 active:scale-95 transition-all text-xs bg-slate-800 p-1 rounded"><i class="fas fa-copy"></i></button></div>`; }
+                                el('withdrawal-list').innerHTML += `<div class="history-item items-center"><div class="flex items-start gap-3 w-full"><div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center shrink-0">${icon}</div><div class="flex-1"><p class="text-sm font-bold leading-tight">${tx.method}</p><p class="text-[9px] text-slate-500 uppercase mt-0.5">${tx.date}</p>${redeemHtml}</div><div class="text-right shrink-0"><b class="text-red-400 text-sm">-₹${tx.amount}</b><br><p class="text-[8px] ${statusColor} px-2 py-0.5 rounded-full font-black uppercase mt-1 inline-block">${tx.status}</p></div></div></div>`; 
+                            });
+                        } else { el('withdrawal-list').innerHTML = '<p class="text-center text-slate-500 text-xs mt-4 opacity-50">No history.</p>'; }
+                    }
+                    if (el('match-history-list')) {
+                        el('match-history-list').innerHTML = '';
+                        if (d.bookedMatches) { 
+                            Object.values(d.bookedMatches).reverse().forEach(m => { 
+                                window.joinedMatches[m.matchId] = true; 
+                                if(!window.matchListeners[m.matchId]) {
+                                    window.matchListeners[m.matchId] = true;
+                                    onChildAdded(ref(db, `AdminNotifications/Matches/${m.matchId}`), (nSnap) => { const nData = nSnap.val(); if(nData.timestamp > window.appLoadTime) { window.showPushNotification('Match Alert 🔔', nData.message, 'match'); } });
+                                }
+                                el('match-history-list').innerHTML += `<div class="history-item flex-col items-start gap-2"><div class="flex justify-between items-center w-full"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400"><i class="fas fa-gamepad"></i></div><div><p class="text-sm font-black text-white">${m.matchName}</p><p class="text-[9px] text-slate-400 font-bold">${m.time}</p></div></div><div class="text-right"><b class="text-red-400 text-sm font-black">-₹${m.entryFee}</b></div></div><div class="w-full bg-slate-800 p-2 rounded-lg border border-slate-700 flex justify-between items-center mt-1"><span class="text-[10px] text-slate-400 font-bold uppercase">Status</span><span class="text-[10px] text-green-400 font-black uppercase tracking-wider"><i class="fas fa-check-circle mr-1"></i> Confirmed</span></div></div>`; 
+                            });
+                        } else { el('match-history-list').innerHTML = '<div class="text-center py-10 opacity-30"><i class="fas fa-gamepad text-5xl mb-3"></i><p class="text-xs uppercase font-bold">No matches joined</p></div>'; }
+                    }
+                }
+            });
+        };
+
+        window.listenForLeaderboard = () => {
+            onValue(ref(db, 'leaderboard'), (s) => {
+                const t3 = el('leaderboard-top-3'), oth = el('leaderboard-others'); if (!t3 || !oth) return;
+                t3.innerHTML = ''; oth.innerHTML = ''; window.top3Names = [];
+                
+                if (s.exists()) {
+                    let p = s.val(); 
+                    for(let i=1; i<=3; i++) { if(p[i] && p[i].name && typeof p[i].name === 'string') window.top3Names.push(p[i].name.toLowerCase().trim()); }
+
+                    t3.innerHTML = `<div class="top-rank bg-slate-800/40 p-3 rounded-t-2xl border-t border-slate-700"><div class="w-12 h-12 bg-slate-600 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-white shadow-lg">2</div><p class="text-[10px] font-bold text-white truncate px-1 flex items-center justify-center gap-1">${p[2] ? p[2].name : '---'} ${p[2] ? '<span class="v-badge">V</span>' : ''}</p><b class="text-green-400">₹${p[2] ? p[2].winning : 0}</b></div><div class="top-rank bg-blue-600/20 p-4 rounded-t-3xl border-t border-blue-500 shadow-xl"><i class="fas fa-crown crown"></i><div class="w-16 h-16 bg-yellow-500 rounded-full mx-auto mb-2 flex items-center justify-center text-xl font-bold border-4 border-slate-900 text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">1</div><p class="text-xs font-bold text-white truncate px-1 flex items-center justify-center gap-1">${p[1] ? p[1].name : '---'} ${p[1] ? '<span class="v-badge">V</span>' : ''}</p><b class="text-sm text-green-400">₹${p[1] ? p[1].winning : 0}</b></div><div class="top-rank bg-slate-800/40 p-3 rounded-t-2xl border-t border-slate-700"><div class="w-12 h-12 bg-orange-700/50 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-white shadow-lg">3</div><p class="text-[10px] font-bold text-white truncate px-1 flex items-center justify-center gap-1">${p[3] ? p[3].name : '---'} ${p[3] ? '<span class="v-badge">V</span>' : ''}</p><b class="text-green-400">₹${p[3] ? p[3].winning : 0}</b></div>`;
+                    
+                    for (let i = 4; i <= 10; i++) { 
+                        if (p[i] && p[i].name) { oth.innerHTML += `<div class="history-item"><span class="text-slate-300 font-bold flex items-center">${i}. ${p[i].name} <span class="blue-tick"><i class="fas fa-check"></i></span></span><b class="text-green-400">₹${p[i].winning}</b></div>`; } 
+                        else { oth.innerHTML += `<div class="history-item opacity-50"><span class="text-slate-500 font-bold">${i}. ---</span><b class="text-slate-600">₹0</b></div>`; }
+                    }
+                }
+                window.updateProfileBadge(); 
+            });
+        };
+
+        const renderMatches = (data, containerId, isSched) => {
+            const cont = el(containerId); if(!cont) return; cont.innerHTML = '';
+            if(!data) return;
+            
+            Object.keys(data).forEach(id => {
+                const m = data[id]; window.activeMatchesData[id] = m; 
+                let isF = (m.joined || 0) >= m.players; let isJ = window.joinedMatches[id] ? true : false;
+                if(m.joined === 0) { isJ = false; }
+
+                let btn = '', bHtml = '', pGrid = ''; let mType = (m.type || "").toLowerCase(); let is1v1 = mType.includes('1v1') || mType.includes('1vs1') || mType.includes('lone wolf'); let imgUrl = m.bannerUrl || 'https://image2url.com/r2/default/images/1775843020001-d4981a8f-0082-4ce9-b96d-0fe8138feb51.jpg';
+                let formattedTime = 'Time TBA'; if(m.matchTime) { const d = new Date(m.matchTime); formattedTime = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }); }
+                
+                if(is1v1) { pGrid = `<div class="grid grid-cols-2 gap-4 text-center mb-4"><div class="bg-slate-900/50 p-2 rounded-xl font-bold border border-slate-800"><p class="text-[8px] text-slate-500 uppercase tracking-widest">WIN</p><p class="text-green-400 text-sm">₹${m.win}</p></div><div class="bg-slate-900/50 p-2 rounded-xl font-bold border border-slate-800"><p class="text-[8px] text-slate-500 uppercase tracking-widest">ENTRY</p><p class="text-yellow-500 text-sm">₹${m.entry}</p></div></div>`; } 
+                else { pGrid = `<div class="grid grid-cols-3 gap-2 text-center mb-4"><div class="bg-slate-900/50 p-2 rounded-xl font-bold border border-slate-800"><p class="text-[8px] text-slate-500 uppercase tracking-widest">WIN</p><p class="text-green-400 text-sm">₹${m.win}</p></div><div class="bg-slate-900/50 p-2 rounded-xl font-bold border border-slate-800"><p class="text-[8px] text-slate-500 uppercase tracking-widest">PER KILL</p><p class="text-blue-400 text-sm">₹${m.kill || 0}</p></div><div class="bg-slate-900/50 p-2 rounded-xl font-bold border border-slate-800"><p class="text-[8px] text-slate-500 uppercase tracking-widest">ENTRY</p><p class="text-yellow-500 text-sm">₹${m.entry}</p></div></div>`; }
+
+                if(!isSched) {
+                    if (!isJ) btn = isF ? `<button class="w-full bg-slate-800 border border-slate-700 py-3 rounded-xl font-black uppercase text-slate-500 cursor-not-allowed">SLOT FULL</button>` : `<button id="btn-${id}" onclick="window.openJoinModal(${m.entry}, '${id}', ${m.win}, ${m.kill || 0}, '${m.type}')" class="w-full bg-yellow-500 py-3 rounded-xl font-black uppercase shadow-lg shadow-yellow-600/20 text-slate-900 active:scale-95 transition-transform">Join Now ₹${m.entry}</button>`;
+                    if (isJ) { bHtml = `<div id="booked-status-${id}" class="bg-slate-800 border border-green-500/30 rounded-xl p-3 text-center mt-3"></div>`; } else { bHtml = `<div id="booked-status-${id}" class="hidden bg-slate-800 border border-green-500/30 rounded-xl p-3 text-center mt-3"></div>`; }
+                    cont.innerHTML += `<div class="match-card border-yellow-500/50 shadow-[0_0_20px_rgba(234,179,8,0.15)] mb-4" id="match-${id}"><span class="absolute top-0 right-0 bg-yellow-600 text-[8px] text-slate-900 font-black px-4 py-1 rounded-bl-xl uppercase italic">${m.type}</span><div class="flex items-center gap-2 mb-2"><span class="time-tag bg-slate-800 text-blue-400 border-blue-500/30" id="time-tag-${id}"><i class="fas fa-clock mr-1"></i> ${formattedTime}</span></div><div class="flex items-center justify-between gap-4 mb-4 mt-2"><div class="ff-max-title italic text-left" style="font-size: 26px;">FREE FIRE <span class="text-white">MAX</span></div><div class="p-1 rounded-xl border-2 border-slate-700 bg-slate-900/50 shrink-0"><img src="${imgUrl}" class="w-16 h-16 object-cover rounded-lg"></div></div>${pGrid}<div class="flex justify-between text-[10px] font-bold mb-1"><span>Players: ${m.joined || 0} / ${m.players}</span></div><div class="prog-bg mb-4"><div class="prog-fill" style="width: ${((m.joined || 0)/m.players)*100}%;"></div></div>${btn}${bHtml}</div>`;
+                } else {
+                    cont.innerHTML += `<div class="match-card border-slate-700 opacity-90 mb-4"><span class="absolute top-0 right-0 bg-blue-600 text-[8px] font-black px-4 py-1 rounded-bl-xl uppercase italic">${m.type}</span><div class="flex items-center justify-between gap-4 mt-5 mb-4"><div class="ff-max-title italic text-left" style="font-size: 26px;">FREE FIRE <span class="text-white">MAX</span></div><div class="p-1 rounded-xl border-2 border-slate-700 bg-slate-900/50 shrink-0"><img src="${imgUrl}" class="w-16 h-16 object-cover rounded-lg"></div></div>${pGrid}<div class="flex justify-between text-[10px] font-bold mb-1"><span>Players: ${m.joined || 0} / ${m.players}</span></div><div class="prog-bg"><div class="prog-fill" style="width: ${((m.joined || 0)/m.players)*100}%;"></div></div><div class="w-full bg-slate-800 py-3 rounded-xl font-black mt-4 text-xs text-slate-400 uppercase text-center"><i class="fas fa-calendar mr-1"></i> ${formattedTime}</div></div>`;
+                }
+            });
+            window.updateMatchTimers();
+        };
+
+        window.listenForMatches = () => { onValue(ref(db, 'matches/home'), s => renderMatches(s.val(), 'dynamic-matches-container', false)); };
+        window.listenForScheduleMatches = () => { onValue(ref(db, 'matches/schedule'), s => renderMatches(s.val(), 'dynamic-schedule-container', true)); };
+
+        // ==========================================
+        //         NEW CASHFREE INTEGRATION 
+        // ==========================================
+        const CASHFREE_APP_ID = "12552967b7620eaac928cb9a6ef6925521";
+        const CASHFREE_SECRET_KEY = "Cfsk_ma_prod_40261be5fbce57865d939065f7a9c196_97f02f13";
+
+        window.processAddCash = async () => {
+            const amt = parseFloat(el('final-amt').value);
+            if(isNaN(amt) || amt < 1) return window.showNotify("Minimum ₹1 Required", "error");
+
+            const btn = el('add-cash-btn');
+            const origTxt = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Processing...';
+            btn.disabled = true;
+
+            try {
+                // Generate unique Order ID
+                const orderId = "ORDER_" + window.currentUserAppId + "_" + Date.now();
+                
+                // ⚠️ NOTE: Direct Fetch to Cashfree from Client-side might fail due to CORS.
+                // In a real production environment, you should create the order session from your backend.
+                const response = await fetch('https://api.cashfree.com/pg/orders', {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'application/json',
+                        'content-type': 'application/json',
+                        'x-api-version': '2023-08-01',
+                        'x-client-id': CASHFREE_APP_ID,
+                        'x-client-secret': CASHFREE_SECRET_KEY
+                    },
+                    body: JSON.stringify({
+                        order_amount: amt,
+                        order_currency: "INR",
+                        order_id: orderId,
+                        customer_details: {
+                            customer_id: window.currentUserAppId || "GUEST_USER",
+                            customer_phone: "9999999999",
+                            customer_name: window.currentUserName || "Player"
+                        },
+                        order_meta: {
+                            return_url: window.location.href + "?order_id={order_id}"
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.payment_session_id) {
+                    // Initialize Cashfree SDK Drop-in
+                    const cashfree = Cashfree({ mode: "production" });
+                    
+                    cashfree.checkout({
+                        paymentSessionId: data.payment_session_id,
+                        redirectTarget: "_modal", // Opens payment popup inside the app!
+                    }).then((result) => {
+                        if (result.error) {
+                            window.showNotify("Payment Cancelled or Failed!", "error");
+                            btn.innerHTML = origTxt; btn.disabled = false;
+                        }
+                        if (result.redirect) {
+                            console.log("Redirection started");
+                        }
+                        if (result.paymentDetails) {
+                            // Payment Success
+                            window.handlePaymentSuccess(amt, orderId);
+                        }
+                    });
+                } else {
+                    console.error("Order Creation Failed:", data);
+                    window.showNotify("CORS error or Order Limit Reached!", "error");
+                    btn.innerHTML = origTxt; btn.disabled = false;
+                }
+
+            } catch (error) {
+                console.error(error);
+                window.showNotify("Connection Error! (Possible CORS block)", "error");
+                btn.innerHTML = origTxt; btn.disabled = false;
+            }
+        };
+
+        window.handlePaymentSuccess = async (amt, orderId) => {
+            window.userBalance += amt;
+            window.updateUI();
+            
+            try {
+                // Update Balance on Firebase
+                await update(ref(db, `Users/${window.currentUserAppId}`), { balance: window.userBalance });
+                const dt = new Date().toLocaleString('en-GB');
+                
+                // Add History
+                await set(push(ref(db, `Users/${window.currentUserAppId}/walletTransactions`)), { 
+                    type: 'add', 
+                    title: 'Add Cash (Cashfree)', 
+                    amount: amt, 
+                    date: dt 
+                });
+                
+                window.showNotify(`✅ ₹${amt} Added to Wallet!`, "success");
+                window.showSection('wallet'); // Redirect back to wallet
+            } catch(e) {
+                console.error("DB update error", e);
+                window.showNotify("Payment Success, but App Error!", "error");
+            }
+            
+            const btn = el('add-cash-btn');
+            btn.innerHTML = 'Proceed to Pay';
+            btn.disabled = false;
+        };
+        // ==========================================
+
+
+        window.processMatchJoin = async () => {
+            const u = el('m-uid').value, n = el('m-nick').value, l = el('m-level').value;
+            if(!u || !n || !l) return window.showJoinError("Sabhi details bharna zaroori hai.");
+            if(parseInt(l) < 30) return window.showJoinError("Min Level 30 Required!");
+            if(window.userBalance < window.currentFee) { window.show('low-balance-alert'); window.hide('join-error-box'); return; }
+            
+            window.userBalance -= window.currentFee; window.updateUI(); window.closeJoinModal(); window.show('booking-success-overlay');
+
+            try {
+                await update(ref(db, `Users/${window.currentUserAppId}`), { balance: window.userBalance });
+                await set(push(ref(db, `Users/${window.currentUserAppId}/bookedMatches`)), { matchId: window.currentTargetId, matchName: window.dynamicType, entryFee: window.currentFee, time: new Date().toLocaleString('en-GB') });
+                await set(push(ref(db, `Users/${window.currentUserAppId}/walletTransactions`)), { type: 'deduct', title: `Joined ${window.dynamicType}`, amount: window.currentFee, date: new Date().toLocaleString('en-GB') });
+                await update(ref(db, `matches/home/${window.currentTargetId}`), { joined: increment(1) });
+                window.joinedMatches[window.currentTargetId] = true;
+            } catch(e) { console.error(e); }
+            setTimeout(() => { window.hide('booking-success-overlay'); window.showPremiumSuccess(`Slot Booked for ${n}`); window.hide('btn-' + window.currentTargetId); window.show('booked-status-' + window.currentTargetId); }, 1800);
+        };
+
+        window.processWithdrawal = async (t) => {
+            let amt = 0; let withdrawDetail = ""; 
+
+            if(t === 'upi') { const id = el('upi-id').value; amt = parseInt(el('upi-amt').value); if(!id) return window.showWdError("Please enter UPI ID!"); withdrawDetail = id; } 
+            else { const em = el('redeem-email').value; amt = window.selectedRedeemAmt; if(!em) return window.showWdError("Please enter Email!"); if(amt === 0) return window.showWdError("Please select amount!"); withdrawDetail = em; }
+            
+            if(isNaN(amt) || amt < 10) return window.showWdError("Min withdrawal is ₹10!"); if(window.userBalance < amt) return window.showWdError("Low Balance!");
+            
+            window.userBalance -= amt; window.updateUI(); window.show('wd-success-popup');
+            
+            try {
+                await update(ref(db, `Users/${window.currentUserAppId}`), { balance: window.userBalance });
+                await set(push(ref(db, `Users/${window.currentUserAppId}/withdrawals`)), { method: t === 'upi' ? 'UPI / PhonePe' : 'Google Play Redeem', amount: amt, detail: withdrawDetail, date: new Date().toLocaleString('en-GB'), status: 'Processing' });
+                await set(push(ref(db, `Users/${window.currentUserAppId}/walletTransactions`)), { type: 'deduct', title: 'Withdrawal', amount: amt, date: new Date().toLocaleString('en-GB') });
+
+                if(t === 'upi') { el('upi-id').value = ''; el('upi-amt').value = ''; } else { el('redeem-email').value = ''; }
+
+            } catch(e) { console.error(e); }
+        };
+
+        window.updateProfileData = async () => {
+            const nn = el('edit-nick').value.trim(), nu = el('edit-uid').value.trim(); 
+            if(nn.length < 3 || nu.length < 5) return window.showNotify("❌ Invalid Nickname or UID", "error");
+            if(window.top3Names && window.top3Names.includes(nn.toLowerCase()) && window.currentUserName.toLowerCase() !== nn.toLowerCase()) { return window.showNotify("❌ Cannot use Top Player's Name!", "error"); }
+
+            try { 
+                await update(ref(db, `Users/${window.currentUserAppId}`), { nickname: nn, gameUid: nu }); 
+                window.currentUserName = nn; window.updateProfileBadge(); el('u-uid').innerText = nu; 
+                window.showNotify("✅ Profile Updated!", "success"); window.showSection('profile'); 
+            } catch (e) { window.showNotify("❌ Failed to update.", "error"); }
+        };
+
+        window.openJoinModal = (f, mId, w, k, t) => { window.currentFee = f; window.currentTargetId = mId; window.dynamicType = t; el('m-fee-text').innerText = "₹" + f; el('m-uid').value = ""; el('m-nick').value = ""; el('m-level').value = ""; window.hide('join-error-box'); window.hide('low-balance-alert'); window.show('join-overlay'); };
+
+        window.applyPromoCode = async () => {
+            const code = el('promo-code-input').value.trim().toUpperCase(), btn = el('apply-promo-btn'), orig = btn.innerText;
+            if(!code) return window.showNotify("Please enter promo code", "error");
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i>'; btn.disabled = true;
+            try {
+                const s = await get(ref(db, `promoCodes/${code}`));
+                if (!s.exists()) { window.showNotify("❌ Invalid Promo Code!", "error"); btn.innerHTML = orig; btn.disabled = false; return; }
+                const d = s.val(), td = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                if (d.type === 'admin') { if (window.currentUserAppId !== d.adminId) { window.showNotify("❌ Invalid Promo Code!", "error"); btn.innerHTML = orig; btn.disabled = false; return; } } else if (d.type === 'limited') { const uSnap = await get(ref(db, `Users/${window.currentUserAppId}/promoUsage/${td}`)); if (uSnap.exists() && uSnap.val() === true) { window.showNotify("❌ Limit reached for today!", "error"); btn.innerHTML = orig; btn.disabled = false; return; } if (d.currentUses >= d.maxUses) { window.showNotify("❌ Code Expired!", "error"); btn.innerHTML = orig; btn.disabled = false; return; } await update(ref(db, `Users/${window.currentUserAppId}`), { [`promoUsage/${td}`]: true }); await update(ref(db, `promoCodes/${code}`), { currentUses: increment(1) }); }
+                
+                window.userBalance += d.reward; await update(ref(db, `Users/${window.currentUserAppId}`), { balance: window.userBalance });
+                const dt = new Date().toLocaleString('en-GB');
+                await set(push(ref(db, `Users/${window.currentUserAppId}/walletTransactions`)), { type: 'add', title: `Promo: ${code}`, amount: d.reward, date: dt });
+                await set(push(ref(db, `Users/${window.currentUserAppId}/rewards`)), { title: `Promo Code: ${code}`, amount: d.reward, date: dt });
+                
+                window.updateUI(); window.showNotify(`✅ ₹${d.reward} Added!`, "success"); el('promo-code-input').value = '';
+            } catch(e) { window.showNotify("❌ Server Error!", "error"); }
+            btn.innerHTML = orig; btn.disabled = false;
+        };
+
+        window.shareReferralLink = () => { const referBonus = el('refer-bonus-display').innerText; const message = `🔥 Play Free Fire Tournaments & Win Real Cash! 🔥\n\nDownload VICKY ESPORTS FF now and use my App ID as Referral Code to get Bonus!\n\nMy Referral Code: ${window.currentUserAppId}\n\nJoin Now: [Your App Link Here]`; const encodedMessage = encodeURIComponent(message); window.open(`https://wa.me/?text=${encodedMessage}`, '_blank'); };
+
+        function showWelcomeMessage(n) { if(window.welcomeSettings.isActive === false || window.welcomeSettings.isActive === 'false') return; const w = el('welcome-popup'); el('welcome-popup-title').innerText = window.welcomeSettings.title || "Welcome Warrior"; el('welcome-user-name').innerText = `Hi ${n}, ${window.welcomeSettings.message || "Enjoy daily matches!"}`; window.show('welcome-popup'); setTimeout(() => { w.style.top = '-100px'; w.style.opacity = '0'; setTimeout(() => { window.hide('welcome-popup'); w.style.top = '15px'; w.style.opacity = '1'; }, 800); }, 6000); }
+        
+        window.closeJoinModal = () => { window.hide('join-error-box'); window.hide('join-overlay'); window.hide('low-balance-alert'); };
+        window.closeWdPopup = () => { window.hide('wd-success-popup'); window.showSection('wallet'); };
+        window.setAmt = (v, b) => { document.querySelectorAll('#add-cash-section .amt-btn').forEach(x => x.classList.remove('amt-active')); b.classList.add('amt-active'); el('final-amt').value = v; };
+        window.setRedeemAmt = (v, b) => { document.querySelectorAll('#redeem-wd-box .amt-btn').forEach(x => x.classList.remove('amt-active')); b.classList.add('amt-active'); window.selectedRedeemAmt = v; };
+        window.toggleWdView = (v, b) => { window.hide('withdraw-error-box'); document.querySelectorAll('#withdraw-section .amt-btn').forEach(x => x.classList.remove('amt-active')); b.classList.add('amt-active'); if(v === 'upi') { window.show('upi-wd-box'); window.hide('redeem-wd-box'); } else { window.hide('upi-wd-box'); window.show('redeem-wd-box'); } };
+        window.showSection = (id) => { document.querySelectorAll('main section').forEach(s => s.classList.add('hidden')); window.show(id + '-section'); document.querySelectorAll('nav button').forEach(b => { b.classList.remove('nav-active'); b.classList.add('text-slate-500'); }); const btn = el(id + '-btn'); if(btn) { btn.classList.add('nav-active'); btn.classList.remove('text-slate-500'); } window.scrollTo(0,0); };
+        window.showSubSection = (id) => { document.querySelectorAll('main section').forEach(s => s.classList.add('hidden')); window.show(id + '-section'); };
+        window.showNotify = (msg, typ) => { const pop = el('msg-popup'); pop.innerText = msg; pop.className = (typ === 'success' ? 'success-bg' : 'error-bg'); window.show('msg-popup'); setTimeout(() => { window.hide('msg-popup'); }, 3000); };
+        window.showPremiumSuccess = (msg) => { const pop = el('premium-success-popup'); el('premium-success-text').innerText = msg; window.show('premium-success-popup'); pop.style.animation = "slideDown 0.4s ease-out"; setTimeout(() => { window.hide('premium-success-popup'); }, 4000); };
+        window.showJoinError = (msg) => { el('join-error-text').innerText = msg; window.show('join-error-box'); setTimeout(() => window.hide('join-error-box'), 3500); };
+        window.showWdError = (msg) => { el('withdraw-error-text').innerText = msg; window.show('withdraw-error-box'); setTimeout(() => window.hide('withdraw-error-box'), 3500); };
+    </script>
+</body>
+</html>
+
